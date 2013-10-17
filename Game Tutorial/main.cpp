@@ -215,9 +215,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			glColor3f(0.80f, 0.0f, 0.0f);			/* Sets the color */
 			glBegin(GL_TRIANGLES);
-				glVertex3f(0.0f, 0.0f, 0.0f);
-				glVertex3f(1.0f, 0.0f, 0.0f);
-				glVertex3f(1.0f, 1.0f, 0.0f);
+				glVertex3f(-0.5f, -0.28f, 0.0f);
+				glVertex3f(0.5f, -0.28f, 0.0f);
+				glVertex3f(0.0f, 0.586f, 0.0f);
 			glEnd();
 
 			SwapBuffers(g_HDC);
