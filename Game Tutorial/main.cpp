@@ -5,6 +5,8 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 
+#include <math.h>
+
 /* Globals */
 float angle = 0.0f;
 float angle_inc = 0.0f;
@@ -200,17 +202,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glLoadIdentity();
 
+#define MAX_SPEED 0.5f
 			if (loop_count % 100 == 0)
 				angle_inc += 0.001f * inc;
-				if (angle_inc == 2)
+				if (angle_inc >= MAX_SPEED)
 					inc = -1;
-				else if (angle_inc == 0)
+				else if (angle_inc <= -MAX_SPEED)
 					inc = 1;
 
 			angle += angle_inc;
 			if (angle >= (360.0f * 10.0f))
 				angle = 0.0f;
-			glTranslatef(0.0f, 0.0f, -2.0f - angle_inc);		/* Move back 5 units */
+			glTranslatef(0.0f, 0.0f, -2.0f - (abs(angle_inc * 10)));		/* Move back 5 units */
 			glRotatef(angle, 0.0f, 0.0f, 1.0f);		/* Rotate along z axis */
 
 			glColor3f(0.80f, 0.0f, 0.0f);			/* Sets the color */
@@ -226,7 +229,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DispatchMessage(&msg);
 		}
 
-		(loop_count++) & 0xffffff;
+		loop_count = (loop_count++) & 0xffffff;
 
 	}
 
