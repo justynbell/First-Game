@@ -8,6 +8,7 @@
 #include <math.h>
 
 /* Globals */
+bool fullscreen = true;
 float angle = 0.0f;
 float angle_inc = 0.0f;
 HDC g_HDC;
@@ -138,11 +139,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	static TCHAR szTitle[] = _T("Title");
 
 	WNDCLASSEX	wcex;				/* Window Class */
+	DEVMODE		devMode;			/* Contains info about the environment of printer/disp. */
 	HWND		hwnd;				/* Window Handle */
 	MSG			msg;				/* message */
+	RECT		winRect;			/* Window rectangle */
 	bool		done;				/* Flow saying when your app is complete */
 	int			loop_count = 0;
 	int			inc = 1;
+
+	DWORD		dwExStyle;
+	DWORD		dwStyle;
+
+	int			screenWidth = 1920;
+	int			screenHeight = 1080;
+	
+	winRect.left = 0;
+	winRect.right = screenWidth;
+	winRect.top = 0;
+	winRect.bottom = screenHeight;
 
 	/* Fill out the Window Class struct */
 	//windowClassInit(&windowClass, hInstance);
@@ -165,19 +179,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	/* Class registered, now create the window */
 	//windowClassCreate(&hwnd, hInstance);
+	
+	memset(&devMode, 0, sizeof(devMode));
+	devMode.dmSize = sizeof(devMode);
+	devMode.dmPelsWidth = screenWidth;
+	devMode.dmPelsHeight = screenHeight;
+	devMode.dmBitsPerPel = 32;
+	devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
 
-	hwnd = CreateWindowEx(NULL,
-						 szWindowClass,
-						 szTitle,
-						 WS_OVERLAPPEDWINDOW | 
-						 WS_VISIBLE,
-						 //WS_SYSMENU,
-						 100, 100,
-						 400, 400,
-						 NULL,
-						 NULL,
-						 hInstance,
-						 NULL);
+	if (ChangeDisplaySettings(&devMode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL) { /* Fullscreen */
+		dwExStyle = WS_EX_APPWINDOW;
+		dwStyle = WS_POPUP;
+		AdjustWindowRectEx(&winRect, dwStyle, false, dwExStyle);
+		ShowCursor(FALSE);
+	} else { /* Not Fullscreen */
+		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		dwStyle = WS_OVERLAPPEDWINDOW;
+		AdjustWindowRectEx(&winRect, dwStyle, false, dwExStyle);
+	}
+
+	hwnd = CreateWindowEx(dwExStyle, szWindowClass, szTitle,
+				dwStyle,
+				0, 0, 
+				winRect.right - winRect.left, 
+				winRect.bottom - winRect.top,
+				NULL, NULL, hInstance, NULL);
 	
 	if (!hwnd) {
 		return GetLastError();
@@ -202,9 +228,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glLoadIdentity();
 
-#define MAX_SPEED 0.5f
-			if (loop_count % 100 == 0)
-				angle_inc += 0.001f * inc;
+#define MAX_SPEED 10.0f
+			if (loop_count % 10 == 0)
+				angle_inc += 1.0f * inc;
 				if (angle_inc >= MAX_SPEED)
 					inc = -1;
 				else if (angle_inc <= -MAX_SPEED)
@@ -213,10 +239,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			angle += angle_inc;
 			if (angle >= (360.0f * 10.0f))
 				angle = 0.0f;
-			glTranslatef(0.0f, 0.0f, -2.0f - (abs(angle_inc * 10)));		/* Move back 5 units */
+			glTranslatef(0.0f, 0.0f, -2.0f - ((angle_inc * 0.1f)));		/* Move back 5 units */
 			glRotatef(angle, 0.0f, 0.0f, 1.0f);		/* Rotate along z axis */
 
-			glColor3f(0.80f, 0.0f, 0.0f);			/* Sets the color */
+			glColor3f(0.00f, 1.0f, 1.0f);			/* Sets the color */
 			glBegin(GL_TRIANGLES);
 				glVertex3f(-0.5f, -0.28f, 0.0f);
 				glVertex3f(0.5f, -0.28f, 0.0f);
